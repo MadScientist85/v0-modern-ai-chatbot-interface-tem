@@ -1,8 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { xai } from "@ai-sdk/xai"
-import { groq } from "@ai-sdk/groq"
-import { generateText } from "ai"
 
 export async function GET(request: NextRequest) {
   const results = {
@@ -34,19 +31,36 @@ export async function GET(request: NextRequest) {
     console.log("[v0] Supabase test failed:", error)
   }
 
-  // Test Grok (xAI) connection
   try {
     console.log("[v0] Testing Grok connection...")
-    const result = await generateText({
-      model: xai("grok-beta"),
-      prompt: 'Say "Grok connection test successful" in exactly 5 words.',
-      maxTokens: 20,
+
+    if (!process.env.XAI_API_KEY) {
+      throw new Error("XAI_API_KEY not found")
+    }
+
+    const response = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.XAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "grok-beta",
+        messages: [{ role: "user", content: 'Say "Grok connection test successful" in exactly 5 words.' }],
+        max_tokens: 20,
+      }),
     })
+
+    if (!response.ok) {
+      throw new Error(`Grok API error: ${response.status}`)
+    }
+
+    const data = await response.json()
 
     results.tests.grok = {
       status: "success",
       message: "Grok API connection successful",
-      response: result.text,
+      response: data.choices?.[0]?.message?.content || "No response",
     }
     console.log("[v0] Grok test passed")
   } catch (error) {
@@ -57,19 +71,36 @@ export async function GET(request: NextRequest) {
     console.log("[v0] Grok test failed:", error)
   }
 
-  // Test Groq connection
   try {
     console.log("[v0] Testing Groq connection...")
-    const result = await generateText({
-      model: groq("llama-3.1-8b-instant"),
-      prompt: 'Say "Groq connection test successful" in exactly 5 words.',
-      maxTokens: 20,
+
+    if (!process.env.GROQ_API_KEY) {
+      throw new Error("GROQ_API_KEY not found")
+    }
+
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: [{ role: "user", content: 'Say "Groq connection test successful" in exactly 5 words.' }],
+        max_tokens: 20,
+      }),
     })
+
+    if (!response.ok) {
+      throw new Error(`Groq API error: ${response.status}`)
+    }
+
+    const data = await response.json()
 
     results.tests.groq = {
       status: "success",
       message: "Groq API connection successful",
-      response: result.text,
+      response: data.choices?.[0]?.message?.content || "No response",
     }
     console.log("[v0] Groq test passed")
   } catch (error) {
@@ -95,17 +126,59 @@ export async function POST(request: NextRequest) {
 
     let result
     if (provider === "grok") {
-      result = await generateText({
-        model: xai("grok-beta"),
-        prompt: message,
-        maxTokens: 100,
+      if (!process.env.XAI_API_KEY) {
+        throw new Error("XAI_API_KEY not found")
+      }
+
+      const response = await fetch("https://api.x.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.XAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "grok-beta",
+          messages: [{ role: "user", content: message }],
+          max_tokens: 100,
+        }),
       })
+
+      if (!response.ok) {
+        throw new Error(`Grok API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      result = {
+        text: data.choices?.[0]?.message?.content || "No response",
+        usage: data.usage,
+      }
     } else if (provider === "groq") {
-      result = await generateText({
-        model: groq("llama-3.1-8b-instant"),
-        prompt: message,
-        maxTokens: 100,
+      if (!process.env.GROQ_API_KEY) {
+        throw new Error("GROQ_API_KEY not found")
+      }
+
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: message }],
+          max_tokens: 100,
+        }),
       })
+
+      if (!response.ok) {
+        throw new Error(`Groq API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      result = {
+        text: data.choices?.[0]?.message?.content || "No response",
+        usage: data.usage,
+      }
     } else {
       return NextResponse.json({ error: "Invalid provider" }, { status: 400 })
     }
