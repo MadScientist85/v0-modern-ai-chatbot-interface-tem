@@ -11,6 +11,8 @@ import {
   FileText,
   Settings,
   Asterisk,
+  Wrench,
+  MessageSquare,
 } from "lucide-react"
 import SidebarSection from "./SidebarSection"
 import ConversationRow from "./ConversationRow"
@@ -51,6 +53,8 @@ export default function Sidebar({
   setSidebarCollapsed = () => {},
   selectedModel = "groq",
   setSelectedModel = () => {},
+  currentView = "chat",
+  setCurrentView = () => {},
 }) {
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false)
   const [showCreateTemplateModal, setShowCreateTemplateModal] = useState(false)
@@ -137,6 +141,32 @@ export default function Sidebar({
         </div>
 
         <div className="flex flex-col items-center gap-4 pt-4">
+          <button
+            onClick={() => setCurrentView("chat")}
+            className={cls(
+              "rounded-xl p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+              currentView === "chat"
+                ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                : "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+            )}
+            title="Chat"
+          >
+            <MessageSquare className="h-5 w-5" />
+          </button>
+
+          <button
+            onClick={() => setCurrentView("test")}
+            className={cls(
+              "rounded-xl p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+              currentView === "test"
+                ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                : "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+            )}
+            title="Test Connections"
+          >
+            <Wrench className="h-5 w-5" />
+          </button>
+
           <button
             onClick={createNewChat}
             className="rounded-xl p-2 hover:bg-zinc-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:hover:bg-zinc-800"
@@ -231,146 +261,187 @@ export default function Sidebar({
             </div>
 
             <div className="px-3 pt-3">
-              <label htmlFor="search" className="sr-only">
-                Search conversations
-              </label>
-              <div className="relative">
-                <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                <input
-                  id="search"
-                  ref={searchRef}
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search…"
-                  onClick={() => setShowSearchModal(true)}
-                  onFocus={() => setShowSearchModal(true)}
-                  className="w-full rounded-full border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm outline-none ring-0 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-950/50"
-                />
+              <div className="flex rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
+                <button
+                  onClick={() => setCurrentView("chat")}
+                  className={cls(
+                    "flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    currentView === "chat"
+                      ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
+                      : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100",
+                  )}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Chat
+                </button>
+                <button
+                  onClick={() => setCurrentView("test")}
+                  className={cls(
+                    "flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                    currentView === "test"
+                      ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
+                      : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100",
+                  )}
+                >
+                  <Wrench className="h-4 w-4" />
+                  Test
+                </button>
               </div>
             </div>
 
-            <div className="px-3 pt-3">
-              <button
-                onClick={createNewChat}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-white dark:text-zinc-900"
-                title="New Chat (⌘N)"
-              >
-                <Plus className="h-4 w-4" /> Start New Chat
-              </button>
-            </div>
-
-            <nav className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2 pb-4">
-              <SidebarSection
-                icon={<Star className="h-4 w-4" />}
-                title="PINNED CHATS" // Renamed from "PINNED CONVERSATIONS" to "PINNED CHATS"
-                collapsed={collapsed.pinned}
-                onToggle={() => setCollapsed((s) => ({ ...s, pinned: !s.pinned }))}
-              >
-                {pinned.length === 0 ? (
-                  <div className="select-none rounded-lg border border-dashed border-zinc-200 px-3 py-3 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                    Pin important threads for quick access.
+            {currentView === "chat" && (
+              <>
+                <div className="px-3 pt-3">
+                  <label htmlFor="search" className="sr-only">
+                    Search conversations
+                  </label>
+                  <div className="relative">
+                    <SearchIcon className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                    <input
+                      id="search"
+                      ref={searchRef}
+                      type="text"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder="Search…"
+                      onClick={() => setShowSearchModal(true)}
+                      onFocus={() => setShowSearchModal(true)}
+                      className="w-full rounded-full border border-zinc-200 bg-white py-2 pl-9 pr-3 text-sm outline-none ring-0 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-zinc-800 dark:bg-zinc-950/50"
+                    />
                   </div>
-                ) : (
-                  pinned.map((c) => (
-                    <ConversationRow
-                      key={c.id}
-                      data={c}
-                      active={c.id === selectedId}
-                      onSelect={() => onSelect(c.id)}
-                      onTogglePin={() => togglePin(c.id)}
-                    />
-                  ))
-                )}
-              </SidebarSection>
-
-              <SidebarSection
-                icon={<Clock className="h-4 w-4" />}
-                title="RECENT"
-                collapsed={collapsed.recent}
-                onToggle={() => setCollapsed((s) => ({ ...s, recent: !s.recent }))}
-              >
-                {recent.length === 0 ? (
-                  <div className="select-none rounded-lg border border-dashed border-zinc-200 px-3 py-3 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                    No conversations yet. Start a new one!
-                  </div>
-                ) : (
-                  recent.map((c) => (
-                    <ConversationRow
-                      key={c.id}
-                      data={c}
-                      active={c.id === selectedId}
-                      onSelect={() => onSelect(c.id)}
-                      onTogglePin={() => togglePin(c.id)}
-                      showMeta
-                    />
-                  ))
-                )}
-              </SidebarSection>
-
-              <SidebarSection
-                icon={<FolderIcon className="h-4 w-4" />}
-                title="FOLDERS"
-                collapsed={collapsed.folders}
-                onToggle={() => setCollapsed((s) => ({ ...s, folders: !s.folders }))}
-              >
-                <div className="-mx-1">
-                  <button
-                    onClick={() => setShowCreateFolderModal(true)}
-                    className="mb-2 inline-flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                  >
-                    <Plus className="h-4 w-4" /> Create folder
-                  </button>
-
-                  {folders.map((f) => (
-                    <FolderRow
-                      key={f.id}
-                      name={f.name}
-                      count={folderCounts[f.name] || 0}
-                      conversations={getConversationsByFolder(f.name)}
-                      selectedId={selectedId}
-                      onSelect={onSelect}
-                      togglePin={togglePin}
-                      onDeleteFolder={handleDeleteFolder}
-                      onRenameFolder={handleRenameFolder}
-                    />
-                  ))}
                 </div>
-              </SidebarSection>
 
-              <SidebarSection
-                icon={<FileText className="h-4 w-4" />} // Replaced StarOff with FileText for better template metaphor
-                title="TEMPLATES"
-                collapsed={collapsed.templates}
-                onToggle={() => setCollapsed((s) => ({ ...s, templates: !s.templates }))}
-              >
-                <div className="-mx-1">
+                <div className="px-3 pt-3">
                   <button
-                    onClick={() => setShowCreateTemplateModal(true)}
-                    className="mb-2 inline-flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    onClick={createNewChat}
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:bg-white dark:text-zinc-900"
+                    title="New Chat (⌘N)"
                   >
-                    <Plus className="h-4 w-4" /> Create template
+                    <Plus className="h-4 w-4" /> Start New Chat
                   </button>
+                </div>
 
-                  {(Array.isArray(templates) ? templates : []).map((template) => (
-                    <TemplateRow
-                      key={template.id}
-                      template={template}
-                      onUseTemplate={handleUseTemplate}
-                      onEditTemplate={handleEditTemplate}
-                      onRenameTemplate={handleRenameTemplate}
-                      onDeleteTemplate={handleDeleteTemplate}
-                    />
-                  ))}
+                <nav className="mt-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2 pb-4">
+                  <SidebarSection
+                    icon={<Star className="h-4 w-4" />}
+                    title="PINNED CHATS"
+                    collapsed={collapsed.pinned}
+                    onToggle={() => setCollapsed((s) => ({ ...s, pinned: !s.pinned }))}
+                  >
+                    {pinned.length === 0 ? (
+                      <div className="select-none rounded-lg border border-dashed border-zinc-200 px-3 py-3 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                        Pin important threads for quick access.
+                      </div>
+                    ) : (
+                      pinned.map((c) => (
+                        <ConversationRow
+                          key={c.id}
+                          data={c}
+                          active={c.id === selectedId}
+                          onSelect={() => onSelect(c.id)}
+                          onTogglePin={() => togglePin(c.id)}
+                        />
+                      ))
+                    )}
+                  </SidebarSection>
 
-                  {(!templates || templates.length === 0) && (
-                    <div className="select-none rounded-lg border border-dashed border-zinc-200 px-3 py-3 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                      No templates yet. Create your first prompt template.
+                  <SidebarSection
+                    icon={<Clock className="h-4 w-4" />}
+                    title="RECENT"
+                    collapsed={collapsed.recent}
+                    onToggle={() => setCollapsed((s) => ({ ...s, recent: !s.recent }))}
+                  >
+                    {recent.length === 0 ? (
+                      <div className="select-none rounded-lg border border-dashed border-zinc-200 px-3 py-3 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                        No conversations yet. Start a new one!
+                      </div>
+                    ) : (
+                      recent.map((c) => (
+                        <ConversationRow
+                          key={c.id}
+                          data={c}
+                          active={c.id === selectedId}
+                          onSelect={() => onSelect(c.id)}
+                          onTogglePin={() => togglePin(c.id)}
+                          showMeta
+                        />
+                      ))
+                    )}
+                  </SidebarSection>
+
+                  <SidebarSection
+                    icon={<FolderIcon className="h-4 w-4" />}
+                    title="FOLDERS"
+                    collapsed={collapsed.folders}
+                    onToggle={() => setCollapsed((s) => ({ ...s, folders: !s.folders }))}
+                  >
+                    <div className="-mx-1">
+                      <button
+                        onClick={() => setShowCreateFolderModal(true)}
+                        className="mb-2 inline-flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <Plus className="h-4 w-4" /> Create folder
+                      </button>
+
+                      {folders.map((f) => (
+                        <FolderRow
+                          key={f.id}
+                          name={f.name}
+                          count={folderCounts[f.name] || 0}
+                          conversations={getConversationsByFolder(f.name)}
+                          selectedId={selectedId}
+                          onSelect={onSelect}
+                          togglePin={togglePin}
+                          onDeleteFolder={handleDeleteFolder}
+                          onRenameFolder={handleRenameFolder}
+                        />
+                      ))}
                     </div>
-                  )}
+                  </SidebarSection>
+
+                  <SidebarSection
+                    icon={<FileText className="h-4 w-4" />}
+                    title="TEMPLATES"
+                    collapsed={collapsed.templates}
+                    onToggle={() => setCollapsed((s) => ({ ...s, templates: !s.templates }))}
+                  >
+                    <div className="-mx-1">
+                      <button
+                        onClick={() => setShowCreateTemplateModal(true)}
+                        className="mb-2 inline-flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                      >
+                        <Plus className="h-4 w-4" /> Create template
+                      </button>
+
+                      {(Array.isArray(templates) ? templates : []).map((template) => (
+                        <TemplateRow
+                          key={template.id}
+                          template={template}
+                          onUseTemplate={handleUseTemplate}
+                          onEditTemplate={handleEditTemplate}
+                          onRenameTemplate={handleRenameTemplate}
+                          onDeleteTemplate={handleDeleteTemplate}
+                        />
+                      ))}
+
+                      {(!templates || templates.length === 0) && (
+                        <div className="select-none rounded-lg border border-dashed border-zinc-200 px-3 py-3 text-center text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                          No templates yet. Create your first prompt template.
+                        </div>
+                      )}
+                    </div>
+                  </SidebarSection>
+                </nav>
+              </>
+            )}
+
+            {currentView === "test" && (
+              <div className="px-3 pt-3 pb-4">
+                <div className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+                  Switch to the Test panel to run connection tests and verify your AI integrations.
                 </div>
-              </SidebarSection>
-            </nav>
+              </div>
+            )}
 
             <div className="mt-auto border-t border-zinc-200/60 px-3 py-3 dark:border-zinc-800">
               <div className="flex items-center gap-2">

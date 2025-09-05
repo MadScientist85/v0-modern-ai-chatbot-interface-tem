@@ -5,6 +5,7 @@ import { Calendar, LayoutGrid, MoreHorizontal } from "lucide-react"
 import Sidebar from "./Sidebar"
 import Header from "./Header"
 import ChatPane from "./ChatPane"
+import TestPanel from "./TestPanel"
 import GhostIconButton from "./GhostIconButton"
 import ThemeToggle from "./ThemeToggle"
 import { INITIAL_CONVERSATIONS, INITIAL_TEMPLATES, INITIAL_FOLDERS } from "./mockData"
@@ -82,6 +83,8 @@ export default function AIAssistantUI() {
   const [selectedModel, setSelectedModel] = useState("groq")
   const [isThinking, setIsThinking] = useState(false)
   const [thinkingConvId, setThinkingConvId] = useState(null)
+
+  const [currentView, setCurrentView] = useState("chat")
 
   useEffect(() => {
     const onKey = (e) => {
@@ -366,6 +369,8 @@ export default function AIAssistantUI() {
           onUseTemplate={handleUseTemplate}
           selectedModel={selectedModel}
           setSelectedModel={setSelectedModel}
+          currentView={currentView}
+          setCurrentView={setCurrentView}
         />
 
         <main className="relative flex min-w-0 flex-1 flex-col">
@@ -375,16 +380,23 @@ export default function AIAssistantUI() {
             setSidebarOpen={setSidebarOpen}
             selectedModel={selectedModel}
             setSelectedModel={setSelectedModel}
+            currentView={currentView}
+            setCurrentView={setCurrentView}
           />
-          <ChatPane
-            ref={composerRef}
-            conversation={selected}
-            onSend={(content) => selected && sendMessage(selected.id, content)}
-            onEditMessage={(messageId, newContent) => selected && editMessage(selected.id, messageId, newContent)}
-            onResendMessage={(messageId) => selected && resendMessage(selected.id, messageId)}
-            isThinking={isThinking && thinkingConvId === selected?.id}
-            onPauseThinking={pauseThinking}
-          />
+
+          {currentView === "chat" ? (
+            <ChatPane
+              ref={composerRef}
+              conversation={selected}
+              onSend={(content) => selected && sendMessage(selected.id, content)}
+              onEditMessage={(messageId, newContent) => selected && editMessage(selected.id, messageId, newContent)}
+              onResendMessage={(messageId) => selected && resendMessage(selected.id, messageId)}
+              isThinking={isThinking && thinkingConvId === selected?.id}
+              onPauseThinking={pauseThinking}
+            />
+          ) : (
+            <TestPanel />
+          )}
         </main>
       </div>
     </div>
